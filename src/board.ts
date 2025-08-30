@@ -1,20 +1,4 @@
-/* 
-board ordering convention:
-012
-345
-678
-*/
-type OuterBoard = InnerBoard[];
-type InnerBoard = {
-  winner: number; // -1 for draw, 0 for ongoing, 1 = X, 2 = O
-  board: number[];
-};
-type Move = {
-  board: OuterBoard;
-  outer: number; // 0 to 8
-  inner: number; // 0 to 8
-  player: number; // 1 = X, 2 = O
-};
+import type { InnerBoard, Move, OuterBoard } from "./types";
 
 export function nextMoves(move: Move) {
   // make copy of board to modify & validate move
