@@ -1,11 +1,13 @@
-import { boardToString, getFirstMoves, getNextMoves } from "./board";
-import type { OuterBoard } from "./types";
+import {
+  boardToString,
+  getEmptyBoard,
+  getFirstMoves,
+  getNextMoves,
+} from "./board";
 
-const board: OuterBoard = Array(9);
-board.fill({ board: Array(9), winner: 0 });
 // console.log(board);
 
-const firstMoves = getFirstMoves(board);
+const firstMoves = getFirstMoves(getEmptyBoard());
 // console.log(firstMoves.slice(0, 5));
 
 const nextMoves = getNextMoves(getNextMoves(firstMoves[0])[0]);

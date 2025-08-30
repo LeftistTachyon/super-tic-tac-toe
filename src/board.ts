@@ -1,5 +1,11 @@
 import type { InnerBoard, Move, OuterBoard } from "./types";
 
+export function getEmptyBoard() {
+  const board: OuterBoard = Array(9);
+  board.fill({ board: Array(9), winner: 0 });
+  return board;
+}
+
 export function getFirstMoves(board: OuterBoard) {
   const output: Move[] = [];
   for (let outer = 0; outer < 9; ++outer) {
