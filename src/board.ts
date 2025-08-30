@@ -1,9 +1,20 @@
 import type { InnerBoard, Move, OuterBoard } from "./types";
 
-export function nextMoves(move: Move) {
+export function getFirstMoves(board: OuterBoard) {
+  const output: Move[] = [];
+  for (let outer = 0; outer < 9; ++outer) {
+    for (let inner = 0; inner < 9; ++inner) {
+      output.push({ board, outer, inner, player: 1 });
+    }
+  }
+
+  return output;
+}
+
+export function getNextMoves(move: Move) {
   // make copy of board to modify & validate move
   const boardCopy = move.board.slice();
-  const inner = (boardCopy[move.inner] = Object.assign(
+  const inner = (boardCopy[move.outer] = Object.assign(
     {},
     boardCopy[move.outer]
   ));
@@ -12,6 +23,7 @@ export function nextMoves(move: Move) {
   // make the move
   inner.board = inner.board.slice();
   inner.board[move.inner] = move.player;
+  // console.log(move.board[move.outer], inner.board);
   // update inner board
   setInnerWinner(inner);
 
@@ -152,4 +164,27 @@ export function findOuterWinner(outer: OuterBoard) {
     }
   }
   return -1; // board is filled with no winner
+}
+
+export function boardToString(board: OuterBoard) {
+  let output = "╔═══╤═══╤═══╗\n";
+  for (let i = 0; i < 9; ++i) {
+    output += "║";
+    const firstBoard = Math.floor(i / 3),
+      firstIdx = (i % 3) * 3;
+    for (let j = 0; j < 9; ++j) {
+      const square =
+        board[firstBoard + Math.floor(j / 3)].board[firstIdx + (j % 3)];
+      output += square ? square.toString(36) : " ";
+      if (j % 3 === 2) {
+        output += j === 8 ? "║\n" : "│";
+      }
+    }
+
+    if (i % 3 === 2) {
+      output += i === 8 ? "╚═══╧═══╧═══╝" : "╟───┼───┼───╢\n";
+    }
+  }
+
+  return output;
 }
