@@ -12,22 +12,30 @@ export function firstAlphabeta(
   alpha = Number.MIN_SAFE_INTEGER,
   beta = Number.MAX_SAFE_INTEGER
 ) {
-  if (depth === 0) return { value: 0 };
+  if (depth === 0) return { value: 0, best: [] };
 
   // generate first moves
   const nextMoves = getFirstMoves(getEmptyBoard());
 
   // maximizing player next
   let value = Number.MIN_SAFE_INTEGER,
-    best: Move | undefined = undefined;
+    best: Move[] = [];
   for (const move of nextMoves) {
-    const evaulation = alphabeta(move, depth - 1, alpha, beta);
+    const { value: evaulation, best: nextBest } = alphabeta(
+      move,
+      depth - 1,
+      alpha,
+      beta
+    );
     if (evaulation > value) {
-      best = move; // to keep track of best variation
+      best = nextBest.slice(); // to keep track of best variation
+      best.unshift(move);
       value = evaulation;
     }
 
-    if (value >= beta) break; // beta cutoff
+    if (value >= beta) {
+      break; // beta cutoff
+    }
     alpha = Math.max(alpha, value);
   }
   return { value, best };
@@ -38,31 +46,58 @@ export function alphabeta(
   depth: number,
   alpha: number,
   beta: number
-) {
-  if (depth === 0) return heuristicValue(node);
+): { value: number; best: Move[] } {
+  if (depth === 0) return { value: heuristicValue(node), best: [] };
 
   // get list of next moves
   const nextMoves = getNextMoves(node);
-  if (!nextMoves.length) return heuristicValue(node);
+  if (!nextMoves.length) return { value: heuristicValue(node), best: [] };
 
   if (node.player === 2) {
     // maximizing player next
-    let value = Number.MIN_SAFE_INTEGER;
+    let value = Number.MIN_SAFE_INTEGER,
+      best: Move[] = [];
     for (const move of nextMoves) {
-      value = Math.max(value, alphabeta(move, depth - 1, alpha, beta));
-      if (value >= beta) break; // beta cutoff
+      const { value: evaulation, best: nextBest } = alphabeta(
+        move,
+        depth - 1,
+        alpha,
+        beta
+      );
+      if (evaulation > value) {
+        best = nextBest.slice(); // to keep track of best variation
+        best.unshift(move);
+        value = evaulation;
+      }
+
+      if (value >= beta) {
+        break; // beta cutoff
+      }
       alpha = Math.max(alpha, value);
     }
-    return value;
+    return { value, best };
   } else {
     // minimizing player next
-    let value = Number.MAX_SAFE_INTEGER;
+    let value = Number.MAX_SAFE_INTEGER,
+      best: Move[] = [];
     for (const move of nextMoves) {
-      value = Math.min(value, alphabeta(move, depth - 1, alpha, beta));
-      if (value <= alpha) break; // alpha cutoff
+      const { value: evaulation, best: nextBest } = alphabeta(
+        move,
+        depth - 1,
+        alpha,
+        beta
+      );
+      if (evaulation < value) {
+        best = nextBest.slice(); // to keep track of best variation
+        best.unshift(move);
+        value = evaulation;
+      }
+      if (value <= alpha) {
+        break; // alpha cutoff
+      }
       beta = Math.min(beta, value);
     }
-    return value;
+    return { value, best };
   }
 }
 
@@ -79,14 +114,10 @@ export function heuristicValue(node: Move) {
     case 2:
       return -2500;
     case 0:
-      let rating = 0;
+      let rating = 50 * countInner(board.map((inner) => inner.winner));
       for (const innerBoard of board) {
-        // check inner board winnings first
-        if (innerBoard.winner === 1) {
-          rating += 50;
-        } else if (innerBoard.winner === 2) {
-          rating -= 50;
-        } else if (innerBoard.winner !== -1) {
+        // check inner board winnings
+        if (innerBoard.winner !== -1) {
           // count the innards if not drawn
           rating += countInner(innerBoard.board);
         }
