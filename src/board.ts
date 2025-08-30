@@ -17,14 +17,14 @@ export function getFirstMoves(board: OuterBoard) {
   return output;
 }
 
-export function getNextMoves(move: Move) {
+export function performMove(move: Move) {
   // make copy of board to modify & validate move
   const boardCopy = move.board.slice();
   const inner = (boardCopy[move.outer] = Object.assign(
     {},
     boardCopy[move.outer]
   ));
-  if (inner.winner) return [];
+  if (inner.winner) return null; // invalid board state
 
   // make the move
   inner.board = inner.board.slice();
@@ -32,6 +32,15 @@ export function getNextMoves(move: Move) {
   // console.log(move.board[move.outer], inner.board);
   // update inner board
   setInnerWinner(inner);
+
+  return boardCopy;
+}
+
+export function getNextMoves(move: Move) {
+  // do the move
+  const boardCopy = performMove(move);
+  // check if a winning move has been made
+  if (!boardCopy || findOuterWinner(boardCopy)) return [];
 
   // limit moves to that board
   if (boardCopy[move.inner]?.winner) {
